@@ -1,0 +1,16 @@
+partid,participant id
+task_ord,task order
+cond,condition (incr: increasing; decr: decreasing size of choice set)
+task_ind,task index
+task,task
+session,php session id
+time,unix time stamp
+gamble_ind,gamble index
+gamble_lab,gamble label
+box,"chosen box (box number, from left to right; 1-2 if nopt=2; 1-4 if nopt=4)"
+opt,chosen option (randomized allocation of [a/b] to boxes 1-2 if nopt=2;  [a/b/c/d] to boxes 1-4 if nopt=4)
+outcome,outcome
+rt,reaction time (miliseconds)
+nopt,number of options in current choice set
+H,was the higher-EV option chosen in the final decision (0: no; 1:yes)
+R,was the riskier (higher variance) option chosen in the final decision (0: no; 1:yes)
