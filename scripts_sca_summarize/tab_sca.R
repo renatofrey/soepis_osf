@@ -56,7 +56,7 @@ for (p_eff in p_effs) {
   if (p_eff == "fluid") p_eff_lab <- "Fluid intelligence"
   if (p_eff == "cryst") p_eff_lab <- "Cryst. intelligence"
   if (p_eff == "eduyears") p_eff_lab <- "Years of education"
-  if (p_eff == "hhinc") p_eff_lab <- "Income"
+  if (p_eff == "hhinc") p_eff_lab <- "Household income"
   if (p_eff == "incomenet") p_eff_lab <- "personal income"
   if (p_eff == "sex") p_eff_lab <- "Sex (female)"
   p_eff_lab <- sub("^.", toupper(substr(p_eff_lab, 1, 1)), p_eff_lab)
@@ -94,11 +94,7 @@ colnames(table) <- labels
 
 for (k in 1:2) {
   
-  if (k == 1) p_table <- table[is.element(table$`Candidate driver`,
-                                          c("Sex (female)",
-                                            "Age",
-                                            "Fluid intelligence",
-                                            "Income")),]
+  if (k == 1) p_table <- table[]
 
   if (k == 2) p_table <- table[!is.element(table$`Candidate driver`,
                                           c("Sex (female)",
@@ -109,7 +105,7 @@ for (k in 1:2) {
   if (k == 1) {
     t_lab <- "tab:sca_results"
     t_cap <- c("Results of the specification curve analyses", "")
-    t_placement <- getOption("xtable.table.placement", "tb")
+    t_placement <- getOption("xtable.table.placement", "t!")
   }
   if (k == 2) {
     t_lab <- "tab:sca_results_si"
@@ -133,22 +129,29 @@ xtab2 <- print(xtab,
                 file="")
 
 
-repl <- " & Number of & Median effect size & Number (proportion) & Number (proportion) & Shuffled samples with & Exact p-value of \\\\\\\\
+repl <- " & Number of & Median effect size & Number (proportion) & Number (proportion) & Permutations with & Exact p-value of \\\\\\\\
  & specifications & across specifications & of credible & of credible & larger proportion of & permutation test \\\\\\\\
  &  & (all / pos. / neg.) & positive effects & negative effects & credible effects & "
 xtab2 <- gsub(paste(labels, collapse=" & "), repl, xtab2)
 
 # make two-columns
-xtab2 <- gsub("table", "table*", xtab2)
+#### xtab2 <- gsub("table", "table*", xtab2)
 
 
+if (F) {
 # convert into threeparttable
 xtab2 <- gsub("\\begin{table}", "\\begin{threeparttable}", xtab2, fixed=T)
 xtab2 <- gsub("\\end{table}", "\\end{threeparttable}", xtab2, fixed=T)
+}
+
 xtab2 <- gsub("\\end{tabular}", "  \\end{tabular} \\begin{tablenotes}
-      \\small
-      \\item 
+      \\footnotesize Note. Candidate correlates are sorted by median effect size across all specifications.
     \\end{tablenotes}", xtab2, fixed=T)
+
+
+xtab2 <- gsub("\\label{tab:sca_results}", "\\label{tab:sca_results} \\resizebox{\\textwidth}{!}{%", xtab2, fixed=T)
+
+xtab2 <- gsub("end{tabular}", "end{tabular}}", xtab2, fixed=T)
 
 
 

@@ -33,7 +33,7 @@ for (p_eff in p_effs) {
   if (p_eff == "cryst") p_eff_lab <- "crystallized intelligence"
   if (p_eff == "hhinc") p_eff_lab <- "household income"
   if (p_eff == "incomenet") p_eff_lab <- "personal income"
-  if (p_eff == "eduyears") p_eff_lab <- "education"
+  if (p_eff == "eduyears") p_eff_lab <- "years of education"
   
   for (p_var in c("mean", "r2_med")) {
     
@@ -59,7 +59,7 @@ for (p_eff in p_effs) {
     # generate data.frame for specifications
     specs <- t(results)
     
-    specs <- rbind(specs[c("sex", "age", "fluid", "cryst", "hhinc",  "eduyears", "empl", "social", "sports"),],
+    specs <- rbind(specs[c("sex", "age", "fluid", "cryst", "eduyears", "hhinc", "empl", "social", "sports"),],
                    "NA"=NA,
                    specs[dvs,])
 
@@ -73,7 +73,7 @@ for (p_eff in p_effs) {
     
     ind_currdv <- which(row.names(specs) == p_eff)
     
-    row.names(specs) <- gsub("eduyears", "Education", row.names(specs))
+    row.names(specs) <- gsub("eduyears", "Years of education", row.names(specs))
     row.names(specs) <- gsub("empl", "Employment stat.", row.names(specs))
     row.names(specs) <- gsub("social", "Time use (social)", row.names(specs))
     row.names(specs) <- gsub("sports", "Time use (sports)", row.names(specs))
@@ -172,12 +172,12 @@ for (p_eff in p_effs) {
 }
 
 if (T) {
-  system("pdfjam ../output/sca_sex.pdf ../output/sca_age.pdf ../output/sca_fluid.pdf ../output/sca_hhinc.pdf --nup 2x2 --outfile ../output/sca.pdf")
+  system("pdfjam ../output/sca_sex.pdf ../output/sca_age.pdf ../output/sca_fluid.pdf ../output/sca_cryst.pdf --nup 2x2 --outfile ../output/sca.pdf")
   system("pdfcrop ../output/sca.pdf ../output/sca.pdf")
   
   system("pdfjam ../output/sca_sex.pdf ../output/sca_age.pdf ../output/sca_fluid.pdf ../output/sca_cryst.pdf --nup 2x2 --outfile ../output/sca1.pdf")
   system("pdfcrop ../output/sca1.pdf ../output/sca1.pdf")
   
-  system("pdfjam ../output/sca_cryst.pdf ../output/sca_eduyears.pdf --nup 2x1 --outfile ../output/sca2.pdf")
+  system("pdfjam ../output/sca_eduyears.pdf ../output/sca_hhinc.pdf --nup 2x1 --outfile ../output/sca2.pdf")
   system("pdfcrop ../output/sca2.pdf ../output/sca2.pdf")
 }
