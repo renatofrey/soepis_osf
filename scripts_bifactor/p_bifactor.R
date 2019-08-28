@@ -1,6 +1,8 @@
 ### This script plots the bifactor model
 ### (c) Renato Frey
 
+vers <- "std"
+
 library(shape)
 library(lavaan)
 
@@ -86,7 +88,6 @@ if (T) {
 
 #var <- var[,order(match(colnames(var), dvs_risk))]
 
-
 if (F) {
   var[3,1:9] <- 0
   var[2,1:9] <- 1-var[1,1:9]
@@ -95,11 +96,28 @@ if (F) {
   var[5,10:25] <- 1-var[4,10:25]
 }
 
+lab <- colnames(var)
+
+lab <- gsub("SOEPgen", "General", lab, fixed=T)
+lab <- gsub("SOEPdri", "Driving", lab, fixed=T)
+lab <- gsub("SOEPinv", "Investment", lab, fixed=T)
+lab <- gsub("SOEPrec", "Recreation", lab, fixed=T)
+lab <- gsub("SOEPocc", "Occupation", lab, fixed=T)
+lab <- gsub("SOEPhea", "Health", lab, fixed=T)
+lab <- gsub("SOEPsoc", "Social", lab, fixed=T)
+
+lab <- gsub("S.dfe2", "Sample s. (DFE2)", lab, fixed=T)
+lab <- gsub("S.dfe4", "Sample s. (DFE4)", lab, fixed=T)
+lab <- gsub("R.dfe2", "Risky ch. (DFE2)", lab, fixed=T)
+lab <- gsub("R.dfe4", "Risky ch. (DFE4)", lab, fixed=T)
+lab <- gsub("R.dfd2", "Risky ch. (DFD2)", lab, fixed=T)
+lab <- gsub("R.dfd4", "Risky ch. (DFD4)", lab, fixed=T)
+
 
 scale <- 6
 scale_u <- scale*1.7
 scale_l <- scale*-0.6
-b <- barplot((var*scale), axes=F, ylim=c(scale_l, scale_u), las=2, col=cols, asp=1, xpd=T) #38.2
+b <- barplot((var*scale), names=lab, axes=F, ylim=c(scale_l, scale_u), las=2, col=cols, asp=1, xpd=T) #38.2
 n <- length(b)
 
 

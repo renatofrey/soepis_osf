@@ -33,11 +33,12 @@ for (eff in effs) {
   # loop through all specifications
   for (file in files) {
     
-    print(file)
+    if (ctr %% 200 == 0) print(paste(file, "/", length(files)))
     
     # save list of missing specifications
     if (!file.exists(file)) {
       missing_files <- rbind(missing_files, cbind(file, eff, dv=NA))
+      print(paste("Missing file:", file))
       next
     }
     
@@ -51,9 +52,13 @@ for (eff in effs) {
     curr_results <- cbind(as.data.frame(curr_results), df.dvs)
     
     # get simulation results for current specification
-    curr_results$sim_median <- NA
-    curr_results$sim_min <- NA
-    curr_results$sim_max <- NA
+    curr_results$sim_lm_med <- NA
+    curr_results$sim_lm_min <- NA
+    curr_results$sim_lm_max <- NA
+    curr_results$sim_rstan_med <- NA
+    curr_results$sim_rstan_min <- NA
+    curr_results$sim_rstan_max <- NA
+    curr_results$n_sim <- NA
     
     if (get_sim == T) {
       curr_sim <- NULL
@@ -61,28 +66,32 @@ for (eff in effs) {
         file_sim <- gsub(eff, paste("sim/", eff, "/sim", formatC(sim, width=3, flag="0"), sep=""), file)
         
         if (!file.exists(file_sim) | file.size(file_sim) == 0) {
-          #missing_files <- rbind(missing_files, cbind(file_sim, eff, curr_dv))
+          print(paste("Missing file:", file_sim))
+          missing_files <- rbind(missing_files, cbind(file_sim, eff, curr_dv))
         } else {
           curr_sim <- rbind(curr_sim, fread(file_sim))
         }
       }
       
-      sim_results <- rbind(sim_results, curr_sim)
-      
-      # get timestamp of first / last simulation run
       if (!is.null(curr_sim)) {
+        
+        sim_results <- rbind(sim_results, curr_sim)
+        
+        # get timestamp of first / last simulation run
         curr_range <- as.POSIXct(range(curr_sim$timestamp), origin = "1970-01-01", tz = "CET")
         if (is.null(minmax)) minmax <- curr_range else {
           if (curr_range[1] < minmax[1]) minmax[1] <- curr_range[1]
           if (curr_range[2] > minmax[2]) minmax[2] <- curr_range[2]
         }
-      }
       
-      # get quantiles of simulated effects for current specification (across all models)
-      if (!is.null(curr_sim)) {
-        curr_results$sim_median <- quantile(curr_sim$mean, .5)
-        curr_results$sim_min <- quantile(curr_sim$mean, .025)
-        curr_results$sim_max <- quantile(curr_sim$mean, .975)
+        # get quantiles of simulated effects for current specification
+        curr_results$sim_lm_med <- quantile(curr_sim$lm_est, .5)
+        curr_results$sim_lm_min <- quantile(curr_sim$lm_est, .025)
+        curr_results$sim_lm_max <- quantile(curr_sim$lm_est, .975)
+        #curr_results$sim_rstan_med <- quantile(curr_sim$rstan_est, .5)
+        #curr_results$sim_rstan_min <- quantile(curr_sim$rstan_est, .025)
+        #curr_results$sim_rstan_max <- quantile(curr_sim$rstan_est, .975)
+        curr_results$n_sim <- nrow(curr_sim)
       }
     }
     
@@ -90,7 +99,7 @@ for (eff in effs) {
     
     # save files temporarily to speed up processing
     ctr <- ctr + 1
-    if (ctr == 500 | file == tail(files, 1)) {
+    if (ctr == 200 | file == tail(files, 1)) {
       results_saved <- read.csv(results_file, blank.lines.skip=F)
       results <- rbind(results_saved, results)
       write.csv(results, file=results_file, row.names=F)
@@ -104,11 +113,19 @@ for (eff in effs) {
       missing_saved <- read.csv("../data/sca/missing_files.csv", blank.lines.skip=F)
       missing_files <- rbind(missing_files, missing_saved)
       write.csv(missing_files, "../data/sca/missing_files.csv", row.names=F)
-      
+    }
+    
+    if (ctr == 200 & file != tail(files, 1)) {
       results <- NULL
       sim_results <- NULL
       missing_files <- NULL
-      ctr <- 1
+      ctr <- 0
     }
   }
+  
+  print(paste("Reading", eff, "done."))  
+  print(paste("Number of specifications found:", dim(results)[1]))
+  check_sims <- table(sim_results$model)
+  print(table(check_sims))
+  
 }
