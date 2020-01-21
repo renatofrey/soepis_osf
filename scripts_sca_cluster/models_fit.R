@@ -189,7 +189,7 @@ if (do_sim == T) {
   b_lm <- s_lm$coefficients[sel_effect,"Estimate"]
   #b_rstan <- s_rstan[sel_effect,"mean"]
   
-  # subract effects from DV
+  # subtract effects from DV
   dat$ynull_lm <- dat[,"y"] - (dat[,sel_pred] * b_lm)
   #dat$ynull_rstan <- dat[,"y"] - (dat[,sel_pred] * b_rstan)
   

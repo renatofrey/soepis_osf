@@ -15,7 +15,7 @@ p_effs <- list.dirs("../objects/scicore/sca", full.names=F, recursive=F)
 p_effs <- p_effs[p_effs != "sim"]
 p_effs <- p_effs[p_effs != "incomenet"]
 
-col_null <- alpha("black", .4)
+col_null <- alpha("black", .1)
 col_spec <- inferno(20)[3]
 
 col_pos <- viridis(20)[18]
@@ -29,7 +29,7 @@ for (p_eff in p_effs) {
   print(p_eff)
   
   results <- read.csv(paste("../data/sca/results_", p_eff, ".csv", sep=""))
-  
+      
   results$col <- "black"
   results$col[which(results$rstan_est > 0 & results$rstan_HDIl > 0)] <- col_pos
   results$col[which(results$rstan_est > 0 & results$rstan_HDIl < 0)] <- col_neu
@@ -114,10 +114,10 @@ for (p_eff in p_effs) {
     row.names(specs) <- gsub("R.dfd2", "Risky choice (DFD2)", row.names(specs))
     row.names(specs) <- gsub("R.dfd4", "Risky choice (DFD4)", row.names(specs))
     
-    row.names(specs) <- gsub("\\<R\\>", "Psychom. model: R", row.names(specs))
-    row.names(specs) <- gsub("\\<REM\\>", "Stat. model: All meas.", row.names(specs))
-    row.names(specs) <- gsub("REMsr", "Stat. model: Prop. m.", row.names(specs))
-    row.names(specs) <- gsub("REMbeh", "Stat. model: Beh. m.", row.names(specs))
+    row.names(specs) <- gsub("\\<R\\>", "Psychom. mod.: 'R'", row.names(specs))
+    row.names(specs) <- gsub("\\<REM\\>", "Statist. mod.: All", row.names(specs))
+    row.names(specs) <- gsub("REMsr", "Statist. mod.: Prop.", row.names(specs))
+    row.names(specs) <- gsub("REMbeh", "Statist. mod.: Beh.", row.names(specs))
     
     
     
@@ -125,7 +125,7 @@ for (p_eff in p_effs) {
     
     layout(matrix(c(1,2,2), ncol = 1))
     
-    par(mar=c(0,12,2,0), mgp=c(4,1,0))
+    par(mar=c(0,14,2,0), mgp=c(4,1,0))
     
     xs <- seq(1, n, length.out=6)
     x.lab = -10
@@ -133,7 +133,19 @@ for (p_eff in p_effs) {
     # generate main plot (upper panel)
     plot(results[,p_var], las=1, xaxt="n", xlab="", ylab="", type="n", ylim=y.lim, yaxt="n", cex.lab=my.cex*.75, frame=F)
     
-    text(-650, 0, y.lab, srt=90, pos=1, xpd=T, cex=my.cex*1.4)
+    ord1 <- order(results$sim_lm_max, decreasing=T)
+    ord2 <- order(results$sim_lm_min, decreasing=F)
+    polygon(x = c(1:n, n:1), y = c(results[ord1, "sim_lm_max"], results[ord2, "sim_lm_min"]), col="lightgrey", border=0)
+    lines(x = 1:n, y=results[ord1, "sim_lm_max"], lty=1, col="darkgrey")
+    lines(x = n:1, y=results[ord2, "sim_lm_min"], lty=1, col="darkgrey")
+    
+    rx <- -1300
+    rx2 <- 4520
+    rect(rx, -.64, rx2, .785, lwd=2, xpd=T)
+    rect(rx, -.64, rx+200, .785, lwd=2, xpd=T, col="black")
+    text(rx+140, .08, "Specification curve", col="white", srt=90, xpd=T, cex=1.5)
+    
+    text(-650, 0.05, y.lab, srt=90, pos=1, xpd=T, cex=my.cex*1.4)
     
     text(x.lab, y=0.7, "Model specfications", pos=2, xpd=T, cex=my.cex)
     #text(n/2, y=0.8, "Model specfications", pos=1, xpd=T, cex=my.cex)
@@ -150,7 +162,7 @@ for (p_eff in p_effs) {
         p_col <- alpha(results$col[i], .75)
         
         # plot confidence intervals
-        if (p_var == "rstan_est" & i %% 2 == 0) lines(x=cbind(i, i), y=cbind(results[i,"rstan_HDIl"], results[i,"rstan_HDIu"]), col=p_col, lwd=.1)
+        if (p_var == "rstan_est" & i %% 1 == 0) lines(x=cbind(i, i), y=cbind(results[i,"rstan_HDIl"], results[i,"rstan_HDIu"]), col=p_col, lwd=.1)
         
         # add frequentist estimates?  
         if (F & p_var == "rstan_est") {
@@ -159,27 +171,16 @@ for (p_eff in p_effs) {
         }
         # lines(x=cbind(i, i), y=cbind(results[i,"lm_est"]+results[i,"lm_stderr"], results[i,"lm_est"]-results[i,"lm_stderr"]), col=p_col, lwd=0.1)
         
-        # plot Null-distribution?
-        if (plot_sim == T  & i %% 3 == 0) {
+        # plot Null-distribution? => order by max simulated effect size
+        if (plot_sim == T  & i %% 1 == 0) {
           ind_sim <- floor(seq(1, nrow(results), length.out=sum(!is.na(results$sim_lm_max))))
-          lines(x=cbind(ind_sim[i], ind_sim[i]), y=cbind(results[order(results$sim_lm_min, decreasing=T)[i],"sim_lm_min"], results[order(results$sim_lm_max, decreasing=T)[i],"sim_lm_max"]), col=col_null, lwd=.05)
+
         }
         
         
       }
-      if (p_var == "rstan_r2") {
-        v1 <- results[i,"rstan_r2"] + results[i,"rstan_r2"]
-        v2 <- results[i,"rstan_r2"] - results[i,"rstan_r2"]
-        lines(x=cbind(i, i), y=cbind(v1, v2), col=gray(.9))
-      }
     }
-    
-    if (p_var == "rstan_est") {
-      #points(results$sim_median[order(results$sim_median, decreasing=T)], col="black", type="l", lwd=1)
-      #points(results$sim_rstan_min[order(results$sim_rstan_min, decreasing=T)], col="black", cex=.4, pch=16, type="l", lty=3, lwd=1)
-      #points(results$sim_rstan_max[order(results$sim_rstan_max, decreasing=T)], col="black", cex=.4, pch=16, type="l", lty=3, lwd=1)
-    }
-    
+
     lines(x=c(0, nrow(results)), y=c(0,0), lwd=1, lty=2)
     
     # plot specification curve
@@ -191,17 +192,22 @@ for (p_eff in p_effs) {
     ind2 <- seq(1, length(results[,"lm_est"]), by=10)
     if (T & p_var == "rstan_est") points(ind2, results[,"lm_est"][ind2], col="white", type="l", lwd=1.5)
     
-    # save correlation between Bayesian and Freuentist estimates
+    # save correlation between Bayesian and freqentist estimates
     cors <- c(cors, cor(results[,"rstan_est"], results[,"lm_est"]))
     
     # thinning out
     specs[,seq(1, ncol(specs), by=3)] <- NA
     specs[,seq(2, ncol(specs), by=3)] <- NA
     
-    par(mar=c(1,12,0,0), mgp=c(3,1,0))
+    par(mar=c(0,14,0,0), mgp=c(3,1,0))
     
     # generate specification table (lower panel)
     plot(NA, xlim=c(1, n), ylim=c(1, nrow(specs)), las=1, xlab="Models (ordered by effect size)", ylab="", yaxt="n", xaxt="n", frame=F, cex=my.cex)
+    
+    rect(rx, 0, rx2, 28.25, lwd=2, xpd=T)
+    rect(rx, 0, rx+200, 28.25, lwd=2, xpd=T, col="black")
+    text(rx+140, 13.65, "Specification panel", col="white", srt=90, xpd=T, cex=1.5)
+    
     #text(x=xs, y=nrow(specs)+1.3, round(xs), xpd=T, cex=my.cex)
     #text(x.lab, nrow(specs)+1.3, "Model", pos=2, xpd=T, cex=my.cex)
     for (i in 1:nrow(specs)) {
@@ -212,7 +218,7 @@ for (p_eff in p_effs) {
       if (i %% 2 == 0) rect(0, i-.5, n, i+.5, col=gray(.95), border=F)
       if (i %% 2 != 0) rect(0, i-.5, n, i+.5, col=gray(.90), border=F)
       
-      if (i == ind_currdv) col_ticks <- col_spec else col_ticks <- "blue"
+      if (i == ind_currdv) col_ticks <- "red" else col_ticks <- "red"
       points(x=1:n, y=rep(i, n), pch=specs[i,], cex=.5, col=col_ticks)
     }
     
@@ -240,6 +246,9 @@ for (p_eff in p_effs) {
     text(x.lab4, 2.25, "Summary", srt=90, xpd=T, pos=3, cex=my.cex*1)
     lines(x=c(x.lab5, x.lab5), y=c(.75,4.25), lwd=.5, xpd=T)
     
+    abline(h=18, lwd=1, lty=3, xpd=T)
+    
+    
     dev.off()
     
   }
@@ -249,14 +258,3 @@ for (p_eff in p_effs) {
 print("Correlations between Bayesian and freq. estimates:")
 print(cors)
 print(round(mean(cors), 4))
-
-if (F) {
-  system("pdfjam ../output/sca_sex.pdf ../output/sca_age.pdf ../output/sca_fluid.pdf ../output/sca_cryst.pdf --nup 2x2 --outfile ../output/sca.pdf")
-  system("pdfcrop ../output/sca.pdf ../output/sca.pdf")
-  
-  system("pdfjam ../output/sca_sex.pdf ../output/sca_age.pdf ../output/sca_fluid.pdf ../output/sca_cryst.pdf --nup 2x2 --outfile ../output/sca1.pdf")
-  system("pdfcrop ../output/sca1.pdf ../output/sca1.pdf")
-  
-  system("pdfjam ../output/sca_eduyears.pdf ../output/sca_hhinc.pdf --nup 2x1 --outfile ../output/sca2.pdf")
-  system("pdfcrop ../output/sca2.pdf ../output/sca2.pdf")
-}
